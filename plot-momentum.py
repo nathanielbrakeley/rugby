@@ -1,18 +1,18 @@
 from sportscode import parse_xml_file
-import csv
 import matplotlib.pyplot as plt
-import json
 
 def main():
-    
+    # Inputs
+    teams = ['Rugby United New York','Rugby ATL']
+    filename = 'ATL_RUNY.xml'
+
     # Initialize variables
-    teams = ['San Diego Legion','Rugby United New York']
     momentum_teams = {t:0 for t in teams}
     score_lookup = get_scoring_chart()
     total_momentum = []
 
     # Parse XML file
-    events = parse_xml_file('SD_RUNY.xml',teams)
+    events = parse_xml_file(filename,teams)
     events = [e for e in events if e['team'] is not None]
 
     for event in events:
@@ -26,7 +26,7 @@ def main():
         yellow_card = any(l[1] == 'Yellow Card' for l in event['labels'])
 
         # Calculate Running Score
-        current_momentum = momentum_teams['Rugby United New York'] - momentum_teams['San Diego Legion']
+        current_momentum = momentum_teams[teams[0]] - momentum_teams[teams[1]]
         
         # Update event object to add to the total momentum list
         event['current_momentum'] = current_momentum
@@ -35,41 +35,41 @@ def main():
         total_momentum.append(event)
 
 
-    plot_momentum(total_momentum)
+    plot_momentum(total_momentum,teams)
 
 
-def plot_momentum(total_momentum):
+def plot_momentum(total_momentum,teams):
     time = [e['start'] for e in total_momentum]
     momentum = [e['current_momentum'] for e in total_momentum]
     plt.plot(time,momentum)
 
-    runy_time = [e['start'] for e in total_momentum if e['team'] == 'Rugby United New York' and e['points_scored']]
-    runy_points = [e['current_momentum'] for e in total_momentum if e['team'] == 'Rugby United New York' and e['points_scored']]
-    plt.plot(runy_time,runy_points,'s',color='orange')
+    team_1_time = [e['start'] for e in total_momentum if e['team'] == teams[0] and e['points_scored']]
+    team_1_points = [e['current_momentum'] for e in total_momentum if e['team'] == teams[0] and e['points_scored']]
+    plt.plot(team_1_time,team_1_points,'s',color='orange')
 
-    sd_time = [e['start'] for e in total_momentum if e['team'] == 'San Diego Legion' and e['points_scored']]
-    sd_points = [e['current_momentum'] for e in total_momentum if e['team'] == 'San Diego Legion' and e['points_scored']]
-    plt.plot(sd_time,sd_points,'s',color='red')
+    team_2_time = [e['start'] for e in total_momentum if e['team'] == teams[1] and e['points_scored']]
+    team_2_points = [e['current_momentum'] for e in total_momentum if e['team'] == teams[1] and e['points_scored']]
+    plt.plot(team_2_time,team_2_points,'s',color='red')
 
     card_time = [e['start'] for e in total_momentum if e['yellow_card']]
     card_points = [e['current_momentum'] for e in total_momentum if e['yellow_card']]
     plt.plot(card_time,card_points,'*',color='black')
 
-    i = 0
-    scores = ['7-10','10-10','13-10','24-18','24-20']
-    for t,p in zip(runy_time,runy_points):
-        plt.annotate(scores[i],(t,p),textcoords="offset points",xytext=(10,0))
-        i+=1
+    # i = 0
+    # scores = ['7-10','10-10','13-10','24-18','24-20']
+    # for t,p in zip(runy_time,runy_points):
+    #     plt.annotate(scores[i],(t,p),textcoords="offset points",xytext=(10,0))
+    #     i+=1
 
-    i = 0
-    scores = ['3-0','8-0','10-0','15-13','17-13','22-13','24-13']
-    for t,p in zip(sd_time,sd_points):
-        plt.annotate(scores[i],(t,p),textcoords="offset points",xytext=(10,0))
-        i+=1
+    # i = 0
+    # scores = ['3-0','8-0','10-0','15-13','17-13','22-13','24-13']
+    # for t,p in zip(sd_time,sd_points):
+    #     plt.annotate(scores[i],(t,p),textcoords="offset points",xytext=(10,0))
+    #     i+=1
 
     plt.xlabel('Time')
     plt.ylabel('Momentum')
-    plt.title('RUNY v SD Momentum')
+    plt.title(f'{teams[0]} v {teams[1]} Momentum')
     plt.show()
 
 def print_to_csv(events):

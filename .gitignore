@@ -1,6 +1,8 @@
 # This is to not upload the game files
 *.xml
 
+test.py
+
 ## EVERYTHING BELOW THIS IS GITHUB BOILERPLATE
 
 # Byte-compiled / optimized / DLL files
