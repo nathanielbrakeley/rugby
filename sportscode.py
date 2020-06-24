@@ -10,28 +10,30 @@ def parse_xml_file(fname,teams):
         instance_dict = _parse_instance(instance)
 
         labels = []
-        game_clock = None
-        team = None
-        player = None
         for label in _label_iterator(instance):
             group = label.find('group').text
             text = label.find('text').text
             if group == 'Game Clock':
-                game_clock = text
+                instance_dict['game_clock'] = text
             elif group in teams:
-                team = group
-                player = text
+                instance_dict['team'] = group
+                instance_dict['player'] = text
+            elif group == 'X':
+                instance_dict['x'] = int(text)
+            elif group == 'Y':
+                instance_dict['y'] = int(text)
+            elif group == 'Field Area':
+                instance_dict['field_area'] = text
+            elif group == 'Field L-R':
+                instance_dict['field_lr'] = text
             else:
                 labels.append((group,text))
 
-        if team is None:
+        if instance_dict['team'] is None:
             for team_name, players in player_map.items():
                 if instance_dict['code'] in players:
-                    team = team_name
+                    instance_dict['team'] = team_name
 
-        instance_dict['game_clock'] = game_clock
-        instance_dict['team'] = team
-        instance_dict['player'] = player
         instance_dict['labels'] = labels
 
         instances[instance_dict['iid']] = instance_dict
@@ -80,7 +82,14 @@ def _parse_instance(instance):
         'start': float(start),
         'end': float(end),
         'code': code,
-        'iid': iid
+        'iid': iid,
+        'game_clock': None,
+        'team': None,
+        'player': None,
+        'x': None,
+        'y': None,
+        'field_lr': None,
+        'field_area': None
     }
 
     return instance_dict
