@@ -35,13 +35,35 @@ def parse_xml_file(fname,teams):
                     instance_dict['team'] = team_name
 
         instance_dict['labels'] = labels
-
         instances[instance_dict['iid']] = instance_dict
     
     events = [v for k,v in instances.items()]
+    events = _combine_by_code_and_time(events)
     events = sorted(events,key=lambda e: e['start'])
 
     return events
+
+def _combine_by_code_and_time(events):
+    grouped = {}
+    for e in events:
+        key = (e['code'],e['start'])
+        if key not in grouped:
+            grouped[key] = []
+        grouped[key].append(e)
+    
+    combined_events = []
+    for key, events in grouped.items():
+        base_event = events[0]
+        for i in range(1,len(events)):
+            curr_event = events[i]
+            new_labels = base_event['labels'] + curr_event['labels']
+            base_event = {**base_event,**{k:v for k,v in curr_event.items() if v is not None}}
+            base_event['labels'] = new_labels
+        base_event['labels'] = list(set(base_event['labels']))
+
+        combined_events.append(base_event)
+
+    return combined_events
 
 def _generate_player_map(root,teams):
     player_map = {teams[0]:[],teams[1]:[]}
